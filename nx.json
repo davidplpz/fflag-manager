@@ -15,9 +15,15 @@
     "sharedGlobals": []
   },
   "projects": {
-    "domain-flag": { "tags": ["scope:domain"] },
-    "application-flag": { "tags": ["scope:application"] },
-    "infrastructure-database": { "tags": ["scope:infrastructure"] }
+    "domain-flag": {
+      "tags": ["scope:domain"]
+    },
+    "application-flag": {
+      "tags": ["scope:application"]
+    },
+    "infrastructure-database": {
+      "tags": ["scope:infrastructure"]
+    }
   },
   "plugins": [
     {
@@ -79,6 +85,11 @@
   "targetDefaults": {
     "test": {
       "dependsOn": ["^build"]
+    },
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "generators": {

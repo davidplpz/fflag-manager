@@ -31,23 +31,23 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
   - Configure path aliases for clean imports
   - _Requirements: Infrastructure setup_
 
-- [ ] 2. Create JWT authentication package
-  - [ ] 2.1 Create library structure at `libs/infrastructure/@org/jwt`
+- [x] 2. Create JWT authentication package
+  - [x] 2.1 Create library structure at `libs/infrastructure/@org/jwt`
     - Generate NX library with `nx g @nx/node:library jwt --directory=libs/infrastructure/@org`
     - Set up barrel exports in index.ts
     - _Requirements: 8.1, 13.1_
   
-  - [ ] 2.2 Implement JWT service with sign, verify, and decode methods
+  - [x] 2.2 Implement JWT service with sign, verify, and decode methods
     - Support both RS256 (asymmetric) and HS256 (symmetric) algorithms
     - Implement JwtPayload interface with sub, email, role, iat, exp
     - Add configurable token expiration (default: 1 hour)
     - _Requirements: 8.4, 13.2, 13.3, 13.5_
   
-  - [ ] 2.3 Write property test for JWT token generation and verification round-trip
+  - [x] 2.3 Write property test for JWT token generation and verification round-trip
     - **Property 27: JWT Token Generation and Verification**
     - **Validates: Requirements 13.5**
   
-  - [ ] 2.4 Write unit tests for JWT service
+  - [x] 2.4 Write unit tests for JWT service
     - Test token expiration handling
     - Test invalid token rejection
     - Test malformed token handling

@@ -23,6 +23,9 @@
     },
     {
       "path": "./libs/infrastructure"
+    },
+    {
+      "path": "./jwt"
     }
   ]
 }
