@@ -3048,18 +3048,17 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - **Validates: Requirements 8.3**
     - **Validates: Requirements 8.4**
   
-  - [ ] 13.2 Create RolesGuard for RBAC
+  - [x] 13.2 Create RolesGuard for RBAC
     - Implement CanActivate interface
     - Check user role from JWT payload
     - Compare against required roles from @Roles decorator
     - Return 403 for insufficient permissions
     - _Requirements: 8.7, 8.8, 8.9_
   
-  - [ ]* 13.3 Write property test for role-based access control
-    - **Property 26: Role-Based Access Control**
+  - [x] 13.3 Write unit tests for role-based access control
     - **Validates: Requirements 8.7, 8.8, 8.9**
   
-  - [ ] 13.4 Create @Roles decorator
+  - [x] 13.4 Create @Roles decorator
     - Custom decorator to specify required roles
     - Store metadata for RolesGuard to read
     - _Requirements: 8.7_
