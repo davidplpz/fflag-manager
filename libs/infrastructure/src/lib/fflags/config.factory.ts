@@ -16,14 +16,15 @@ export class FflagsConfigFactory {
         password: process.env['REDIS_PASSWORD'],
         db: parseInt(process.env['REDIS_DB'] || '0', 10),
         keyPrefix: process.env['REDIS_KEY_PREFIX'] || 'fflags:',
+        ttl: parseInt(process.env['REDIS_TTL'] || '3600', 10),
       },
       database: {
         type: (process.env['DATABASE_TYPE'] as 'postgres' | 'mysql') || 'postgres',
-        host: process.env['DATABASE_HOST'] || 'localhost',
-        port: parseInt(process.env['DATABASE_PORT'] || '5432', 10),
-        username: process.env['DATABASE_USERNAME'] || 'postgres',
-        password: process.env['DATABASE_PASSWORD'] || 'postgres',
-        database: process.env['DATABASE_NAME'] || 'feature_flags',
+        host: process.env['DATABASE_HOST'] || process.env['POSTGRES_HOST'] || 'localhost',
+        port: parseInt(process.env['DATABASE_PORT'] || process.env['POSTGRES_PORT'] || '5432', 10),
+        username: process.env['DATABASE_USERNAME'] || process.env['POSTGRES_USER'] || 'postgres',
+        password: process.env['DATABASE_PASSWORD'] || process.env['POSTGRES_PASSWORD'] || 'postgres',
+        database: process.env['DATABASE_NAME'] || process.env['POSTGRES_DB'] || 'fflags_db',
       },
     };
   }
@@ -36,7 +37,7 @@ export class FflagsConfigFactory {
     overrides?: Partial<FflagsEnvironmentConfig>
   ): FflagsConfig {
     const baseConfig = this.getBaseConfigForEnvironment(environment);
-    
+
     if (overrides) {
       return {
         redis: {
@@ -63,6 +64,7 @@ export class FflagsConfigFactory {
         port: 6379,
         db: 0,
         keyPrefix: 'fflags:dev:',
+        ttl: 3600,
       },
       database: {
         type: 'postgres',
@@ -85,6 +87,7 @@ export class FflagsConfigFactory {
         port: 6379,
         db: 1, // Use different DB for tests
         keyPrefix: 'fflags:test:',
+        ttl: 60, // Shorter TTL for tests
       },
       database: {
         type: 'postgres',
@@ -103,10 +106,10 @@ export class FflagsConfigFactory {
   static forProduction(): FflagsConfig {
     // In production, always use environment variables
     const config = this.fromEnvironment();
-    
+
     // Validate required fields
     this.validateProductionConfig(config);
-    
+
     return config;
   }
 

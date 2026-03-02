@@ -9,6 +9,7 @@ export interface FflagsConfig {
     password?: string;
     db?: number;
     keyPrefix?: string;
+    ttl?: number; // seconds
   };
   database: {
     type: 'postgres' | 'mysql';

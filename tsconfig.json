@@ -4,18 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./api-e2e"
-    },
-    {
-      "path": "./api"
-    },
-    {
-      "path": "./web-e2e"
-    },
-    {
-      "path": "./web"
-    },
-    {
       "path": "./libs/domain"
     },
     {
@@ -23,6 +11,18 @@
     },
     {
       "path": "./libs/infrastructure"
+    },
+    {
+      "path": "./apps/api-e2e"
+    },
+    {
+      "path": "./apps/web-e2e"
+    },
+    {
+      "path": "./apps/api"
+    },
+    {
+      "path": "./apps/web"
     }
   ]
 }

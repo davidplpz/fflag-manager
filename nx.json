@@ -1,7 +1,10 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
     "production": [
       "default",
       "!{projectRoot}/.eslintrc.json",
@@ -16,13 +19,19 @@
   },
   "projects": {
     "domain-flag": {
-      "tags": ["scope:domain"]
+      "tags": [
+        "scope:domain"
+      ]
     },
     "application-flag": {
-      "tags": ["scope:application"]
+      "tags": [
+        "scope:application"
+      ]
     },
     "infrastructure-database": {
-      "tags": ["scope:infrastructure"]
+      "tags": [
+        "scope:infrastructure"
+      ]
     }
   },
   "plugins": [
@@ -73,7 +82,9 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["api-e2e/**/*"]
+      "exclude": [
+        "apps/api-e2e/**/*"
+      ]
     },
     {
       "plugin": "@nx/playwright/plugin",
@@ -84,12 +95,19 @@
   ],
   "targetDefaults": {
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     },
     "@nx/js:tsc": {
       "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "production",
+        "^production"
+      ]
     }
   },
   "generators": {
