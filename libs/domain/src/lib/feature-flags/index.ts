@@ -5,3 +5,5 @@ export * from './rollout-percentage.value-object.js';
 export * from './time-window.value-object.js';
 export * from './strategy.interface.js';
 export * from './strategy-evaluator.js';
+export * from './metric-event.entity.js';
+export * from './analytics-aggregate.entity.js';

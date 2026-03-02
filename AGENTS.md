@@ -25,3 +25,4 @@
 ## Coding rules
 
 - **NO comments in code**: Do not add comments to the code files. The code should be self-documenting.
+- ** NestJS have to be organized in modules, controllers, services, etc** : for example if you need to create a new module, create a new folder in the libs/api/src/lib/ folder and create the module, controller, service, etc in that folder and inject the module in the app.module.ts file. Also use tokens to inject dependencies.

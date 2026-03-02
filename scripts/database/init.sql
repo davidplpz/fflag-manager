@@ -27,3 +27,19 @@ CREATE INDEX IF NOT EXISTS idx_feature_flags_is_active ON feature_flags(is_activ
 CREATE INDEX IF NOT EXISTS idx_metric_events_flag_key ON metric_events(flag_key);
 CREATE INDEX IF NOT EXISTS idx_metric_events_timestamp ON metric_events(timestamp);
 CREATE INDEX IF NOT EXISTS idx_metric_events_flag_timestamp ON metric_events(flag_key, timestamp);
+
+-- Table for pre-aggregated analytics (Analytics_Engine extension)
+CREATE TABLE IF NOT EXISTS analytics_aggregates (
+    id SERIAL PRIMARY KEY,
+    flag_key VARCHAR(255) NOT NULL,
+    time_window VARCHAR(50) NOT NULL, -- '1h', '24h', '7d', '30d'
+    window_start TIMESTAMP NOT NULL,
+    window_end TIMESTAMP NOT NULL,
+    total_evaluations INTEGER DEFAULT 0,
+    enabled_count INTEGER DEFAULT 0,
+    disabled_count INTEGER DEFAULT 0,
+    unique_users INTEGER DEFAULT 0,
+    UNIQUE(flag_key, time_window, window_start)
+);
+
+CREATE INDEX IF NOT EXISTS idx_analytics_aggregates_query ON analytics_aggregates(flag_key, time_window, window_start);

@@ -2894,98 +2894,98 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - **Property 37: Evaluation Exception Handling**
     - **Validates: Requirements 16.7**
 
-- [ ] 9. Build metrics collection system
-  - [ ] 9.1 Create MetricEvent entity
+- [x] 9. Build metrics collection system
+  - [x] 9.1 Create MetricEvent entity
     - Define properties: id, flagKey, result, userId, context, timestamp
     - Add validation for flagKey format
     - Implement constructor with validation
     - _Requirements: 3.5, 5.1, 5.2_
   
-  - [ ] 9.2 Create metrics_events database table
+  - [x] 9.2 Create metrics_events database table
     - Define schema with columns: id, flag_key, result, user_id, context (JSONB), timestamp
     - Add foreign key to feature_flags table
     - Create indexes on flag_key, timestamp, and composite (flag_key, timestamp)
     - _Requirements: 5.3_
   
-  - [ ] 9.3 Implement MetricsCollector service with batching
+  - [x] 9.3 Implement MetricsCollector service with batching
     - Implement in-memory buffer for events (max 100 events)
     - Implement time-based flush (every 10 seconds)
     - Implement async persistence to PostgreSQL
     - Add retry logic with exponential backoff (3 attempts)
     - _Requirements: 5.1, 5.2, 5.5, 5.6_
   
-  - [ ] 9.4 Implement circuit breaker for database failures
+  - [x] 9.4 Implement circuit breaker for database failures
     - Track failure count and last failure time
     - Open circuit after 5 consecutive failures
     - Attempt reset after 60 seconds
     - _Requirements: 5.6, 16.2_
   
-  - [ ] 9.5 Write property test for evaluation generates metric event
+  - [x] 9.5 Write property test for evaluation generates metric event
     - **Property 13: Evaluation Generates Metric Event**
     - **Validates: Requirements 3.5, 5.1, 5.2**
   
-  - [ ] 9.6 Write integration tests for metrics persistence
+  - [x] 9.6 Write integration tests for metrics persistence
     - Test batch insertion to PostgreSQL
     - Test retry logic on failure
     - Test circuit breaker behavior
     - _Requirements: 5.5, 5.6_
 
-- [ ] 10. Create analytics engine
-  - [ ] 10.1 Create AnalyticsAggregate entity
+- [x] 10. Create analytics engine
+  - [x] 10.1 Create AnalyticsAggregate entity
     - Define properties: id, flagKey, timeWindow, windowStart, windowEnd, totalEvaluations, enabledCount, disabledCount, uniqueUsers
     - Implement computed properties: enabledRatio, successRate
     - _Requirements: 5.7, 5.8, 6.1, 6.2, 6.3_
   
-  - [ ] 10.2 Create analytics_aggregates database table
+  - [x] 10.2 Create analytics_aggregates database table
     - Define schema with pre-aggregated data columns
     - Add unique constraint on (flag_key, time_window, window_start)
     - Create index on (flag_key, time_window, window_start)
     - _Requirements: 6.1_
   
-  - [ ] 10.3 Implement AnalyticsEngine service
+  - [x] 10.3 Implement AnalyticsEngine service
     - Implement calculateUsageStats method with aggregation queries
     - Implement findUnusedFlags method (zero evaluations in N days)
     - Implement generateTimeSeries method with time-based grouping
     - Implement exportAnalytics method (JSON format)
     - _Requirements: 5.7, 5.8, 6.1, 6.2, 6.3, 6.4, 6.5, 6.8_
   
-  - [ ] 10.4 Write property test for metrics aggregation accuracy
+  - [x] 10.4 Write property test for metrics aggregation accuracy
     - **Property 15: Metrics Aggregation Accuracy**
     - **Validates: Requirements 5.7, 6.1**
   
-  - [ ] 10.5 Write property test for success rate calculation
+  - [x] 10.5 Write property test for success rate calculation
     - **Property 16: Success Rate Calculation**
     - **Validates: Requirements 5.8, 6.3**
   
-  - [ ] 10.6 Write property test for unique user counting
+  - [x] 10.6 Write property test for unique user counting
     - **Property 17: Unique User Counting**
     - **Validates: Requirements 6.2**
   
-  - [ ] 10.7 Write property test for unused flag detection
+  - [x] 10.7 Write property test for unused flag detection
     - **Property 18: Unused Flag Detection**
     - **Validates: Requirements 6.4**
   
-  - [ ] 10.8 Write property test for time series data grouping
+  - [x] 10.8 Write property test for time series data grouping
     - **Property 19: Time Series Data Grouping**
     - **Validates: Requirements 6.5**
   
-  - [ ] 10.9 Write property test for analytics export round-trip
+  - [x] 10.9 Write property test for analytics export round-trip
     - **Property 20: Analytics Export Round-Trip**
     - **Validates: Requirements 6.8**
   
-  - [ ] 10.10 Implement Redis caching for analytics results
+  - [x] 10.10 Implement Redis caching for analytics results
     - Cache analytics results with 60-second TTL
     - Use cache key pattern: `analytics:{flagKey}:{window}`
     - Invalidate cache on flag updates
     - _Requirements: 4.5, 6.6_
   
-  - [ ] 10.11 Write integration tests for analytics engine
+  - [x] 10.11 Write integration tests for analytics engine
     - Test aggregation queries with real data
     - Test caching behavior
     - Test cache invalidation
     - _Requirements: 6.1, 6.6_
 
-- [ ] 11. Checkpoint - Verify core domain extensions
+- [x] 11. Checkpoint - Verify core domain extensions
   - Ensure all value objects validate correctly
   - Verify strategy evaluator works for all strategy types
   - Verify metrics collection batches and persists events

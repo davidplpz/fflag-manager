@@ -4,5 +4,7 @@
  */
 
 export * from './config.interface.js';
-export * from './config.factory.js';
+export * from './config.interface.js';
 export * from './flag-manager.service.js';
+export * from './metrics-collector.service.js';
+export * from './analytics-engine.service.js';
