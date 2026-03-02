@@ -2798,35 +2798,35 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
 
 ### Phase 2: Core Domain Extensions
 
-- [ ] 7. Create domain value objects
-  - [ ] 7.1 Implement FlagKey value object
+- [x] 7. Create domain value objects
+  - [x] 7.1 Implement FlagKey value object
     - Add validation for kebab-case format (regex: ^[a-z0-9]+(?:-[a-z0-9]+)*$)
     - Add length validation (max 255 characters)
     - Implement equals and toString methods
     - _Requirements: 1.9, 16.4_
   
-  - [ ] 7.2 Write property test for FlagKey validation
+  - [x] 7.2 Write property test for FlagKey validation
     - **Property 6: Kebab-Case Validation**
     - **Validates: Requirements 1.9, 16.4**
   
-  - [ ] 7.3 Implement RolloutPercentage value object
+  - [x] 7.3 Implement RolloutPercentage value object
     - Add validation for range 0-100
     - Add validation for integer values only
     - Implement isFullRollout and isNoRollout helper methods
     - _Requirements: 2.2, 16.5_
   
-  - [ ] 7.4 Write property test for RolloutPercentage bounds validation
+  - [x] 7.4 Write property test for RolloutPercentage bounds validation
     - **Property 35: Rollout Percentage Bounds**
     - **Validates: Requirements 16.5**
   
-  - [ ] 7.5 Implement TimeWindow value object
+  - [x] 7.5 Implement TimeWindow value object
     - Add validation for start < end
     - Add validation for end not in future
     - Implement contains and getDurationInHours methods
     - Implement static fromPreset factory for '1h', '24h', '7d', '30d'
     - _Requirements: 2.4, 5.4, 6.5_
   
-  - [ ] 7.6 Write unit tests for TimeWindow value object
+  - [x] 7.6 Write unit tests for TimeWindow value object
     - Test validation rules
     - Test preset factory method
     - Test contains method with various timestamps
