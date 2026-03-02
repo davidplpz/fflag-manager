@@ -8,7 +8,7 @@ export class AnalyticsEngineService {
     private pgClient: any;
     private redisClient: Redis;
 
-    constructor(private readonly config: FflagsConfig) {
+    constructor(config: FflagsConfig) {
         this.pgClient = new Client({
             host: config.database.host,
             port: config.database.port,

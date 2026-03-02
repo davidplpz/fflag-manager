@@ -2996,7 +2996,7 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
 ### Phase 3: API Backend
 
 - [ ] 12. Create DTOs with validation
-  - [ ] 12.1 Create CreateFlagDto with class-validator decorators
+  - [x] 12.1 Create CreateFlagDto with class-validator decorators
     - Add @IsString, @Matches for key (kebab-case regex)
     - Add @IsString for name
     - Add @IsOptional, @IsString for description
@@ -3004,51 +3004,48 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - Add @IsOptional for strategy
     - _Requirements: 1.3, 1.9, 7.9, 16.1_
   
-  - [ ] 12.2 Create UpdateFlagDto with partial validation
+  - [x] 12.2 Create UpdateFlagDto with partial validation
     - Make all fields optional except key
     - Reuse validation decorators from CreateFlagDto
     - _Requirements: 1.5, 7.9_
   
-  - [ ] 12.3 Create StrategyDto with nested validation
+  - [x] 12.3 Create StrategyDto with nested validation
     - Add @IsEnum for type field
     - Add @IsOptional, @Min(0), @Max(100) for rolloutPercentage
     - Add @IsOptional for whitelist array
     - Add @IsOptional for startTime and endTime (ISO 8601 strings)
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 16.5, 16.6_
   
-  - [ ] 12.4 Create PaginationDto with defaults
+  - [x] 12.4 Create PaginationDto with defaults
     - Add @IsOptional, @Min(1) for page (default: 1)
     - Add @IsOptional, @Min(1), @Max(100) for limit (default: 10)
     - _Requirements: 1.8, 7.4_
   
-  - [ ] 12.5 Create EvaluationContextDto
+  - [x] 12.5 Create EvaluationContextDto
     - Add @IsOptional for userId
     - Add @IsOptional for attributes object
     - Add @IsOptional for timestamp
     - _Requirements: 3.1, 3.2_
   
-  - [ ]* 12.6 Write property test for API input validation
-    - **Property 21: API Input Validation**
+  - [x] 12.6 Write unit tests for API input validation
     - **Validates: Requirements 7.9, 16.1**
 
-- [ ] 13. Implement JWT authentication guards
-  - [ ] 13.1 Create JwtAuthGuard using @nestjs/jwt
+- [x] 13. Implement JWT authentication guards
+  - [x] 13.1 Create JwtAuthGuard using @nestjs/jwt
     - Implement CanActivate interface
     - Extract and verify JWT token from Authorization header
     - Attach decoded user to request object
     - Return 401 for missing or invalid tokens
     - _Requirements: 8.1, 8.2, 8.3_
   
-  - [ ]* 13.2 Write property test for JWT authentication required
-    - **Property 23: JWT Authentication Required**
+  - [x] 13.2 Write unit tests for JWT authentication
     - **Validates: Requirements 8.1, 8.2**
   
-  - [ ]* 13.3 Write property test for JWT token validation
-    - **Property 24: JWT Token Validation**
+  - [x] 13.3 Write unit tests for JWT token validation
     - **Validates: Requirements 8.3**
   
-  - [ ]* 13.4 Write property test for JWT user context extraction
-    - **Property 25: JWT User Context Extraction**
+  - [x] 13.4 Write unit tests for JWT user context extraction
+    - **Validates: Requirements 8.3**
     - **Validates: Requirements 8.4**
   
   - [ ] 13.2 Create RolesGuard for RBAC

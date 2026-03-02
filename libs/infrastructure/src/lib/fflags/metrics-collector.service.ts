@@ -18,7 +18,7 @@ export class MetricsCollectorService {
         resetTimeoutMs: 60000,
     };
 
-    constructor(private readonly config: FflagsConfig) {
+    constructor(config: FflagsConfig) {
         this.pgClient = new Client({
             host: config.database.host,
             port: config.database.port,
