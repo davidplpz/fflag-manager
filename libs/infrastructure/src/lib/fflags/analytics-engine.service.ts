@@ -105,6 +105,43 @@ export class AnalyticsEngineService {
         }
     }
 
+    async generateTimeSeries(flagKey: string, timeWindow: '1h' | '24h' | '7d' | '30d'): Promise<any> {
+        if (!this.pgClient._connected) {
+            await this.pgClient.connect();
+        }
+
+        const windowMs = this.getWindowMs(timeWindow);
+        const end = new Date();
+        const start = new Date(end.getTime() - windowMs);
+
+        let bucketExpression = "date_trunc('hour', timestamp)";
+        if (timeWindow === '1h') bucketExpression = "date_trunc('minute', timestamp)";
+        else if (timeWindow === '24h') bucketExpression = "date_trunc('hour', timestamp)";
+        else bucketExpression = "date_trunc('day', timestamp)";
+
+        const query = `
+            SELECT 
+                ${bucketExpression} as time_bucket,
+                COUNT(*) as evaluations,
+                COUNT(DISTINCT user_id) as unique_users
+            FROM metric_events
+            WHERE flag_key = $1 AND timestamp >= $2 AND timestamp <= $3
+            GROUP BY 1
+            ORDER BY 1 ASC
+        `;
+
+        const res = await this.pgClient.query(query, [flagKey, start, end]);
+
+        return {
+            flagKey,
+            dataPoints: res.rows.map((r: any) => ({
+                timestamp: r.time_bucket,
+                evaluations: parseInt(r.evaluations || '0', 10),
+                uniqueUsers: parseInt(r.unique_users || '0', 10),
+            }))
+        };
+    }
+
     async close(): Promise<void> {
         if (this.pgClient._connected) {
             await this.pgClient.end();

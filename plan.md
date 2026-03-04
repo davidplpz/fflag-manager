@@ -3109,15 +3109,15 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - Verify fallback to database works
     - _Requirements: 4.7, 16.3_
 
-- [ ] 16. Implement metrics and analytics endpoints
-  - [ ] 16.1 Implement GET /api/feature-flags/:key/metrics
+- [x] 16. Implement metrics and analytics endpoints
+  - [x] 16.1 Implement GET /api/feature-flags/:key/metrics
     - Add @Get(':key/metrics') decorator
     - Accept @Query('window') parameter for time window
     - Call MetricsCollector.getMetricsByFlag
     - Return 200 OK with FlagMetrics response
     - _Requirements: 5.7, 5.8, 7.8_
   
-  - [ ] 16.2 Implement GET /api/feature-flags/:key/analytics
+  - [x] 16.2 Implement GET /api/feature-flags/:key/analytics
     - Add @Get(':key/analytics') decorator
     - Accept @Query('window') parameter for time window
     - Call AnalyticsEngine.calculateUsageStats
@@ -3126,7 +3126,7 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - Use Redis cache with 60-second TTL
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6_
   
-  - [ ]* 16.3 Write integration tests for metrics and analytics endpoints
+  - [x]* 16.3 Write integration tests for metrics and analytics endpoints
     - Test metrics endpoint with real data
     - Test analytics endpoint with caching
     - Test time window filtering

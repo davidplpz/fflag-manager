@@ -4,13 +4,14 @@ import type { FlagRepository } from '../../domain/repositories/flag.repository.j
 import type { FeatureFlag } from '@org/domain';
 import { StrategyEvaluator, MetricEvent } from '@org/domain';
 import type { Strategy } from '@org/domain';
-import { MetricsCollectorService } from '@org/infrastructure';
+import { MetricsCollectorService, AnalyticsEngineService } from '@org/infrastructure';
 import { IFeatureFlagsService } from '../ports/feature-flags-service.interface.js';
 import { UpdateFlagDto } from '../../infrastructure/dto/update-flag.dto.js';
 import type { EvaluationContextDto } from '../../infrastructure/dto/evaluation-context.dto.js';
 
 export const STRATEGY_EVALUATOR_TOKEN = 'STRATEGY_EVALUATOR';
 export const METRICS_COLLECTOR_TOKEN = 'METRICS_COLLECTOR';
+export const ANALYTICS_ENGINE_TOKEN = 'ANALYTICS_ENGINE';
 
 /** Extended flag shape that includes the optional strategy field stored by the persistence layer */
 interface FeatureFlagWithStrategy extends FeatureFlag {
@@ -28,6 +29,8 @@ export class FeatureFlagsService implements IFeatureFlagsService {
         private readonly strategyEvaluator: StrategyEvaluator,
         @Inject(METRICS_COLLECTOR_TOKEN)
         private readonly metricsCollector: MetricsCollectorService,
+        @Inject(ANALYTICS_ENGINE_TOKEN)
+        private readonly analyticsEngine: AnalyticsEngineService,
     ) { }
 
     async create(dto: any): Promise<FeatureFlag> {
@@ -107,6 +110,20 @@ export class FeatureFlagsService implements IFeatureFlagsService {
             this.logger.error(`Evaluation failed for flag "${key}": ${(error as Error).message}`, (error as Error).stack);
             return { enabled: false };
         }
+    }
+
+    async getMetrics(key: string, window: '1h' | '24h' | '7d' | '30d'): Promise<any> {
+        return this.metricsCollector.getMetricsByFlag(key, window);
+    }
+
+    async getAnalytics(key: string, window: '1h' | '24h' | '7d' | '30d'): Promise<any> {
+        const stats = await this.analyticsEngine.getAnalytics(key, window);
+        const timeSeries = await this.analyticsEngine.generateTimeSeries(key, window);
+
+        return {
+            ...stats,
+            timeSeries: timeSeries.dataPoints,
+        };
     }
 
     private async recordMetric(key: string, result: boolean, context: EvaluationContextDto): Promise<void> {

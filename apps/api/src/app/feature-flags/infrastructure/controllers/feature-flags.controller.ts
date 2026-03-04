@@ -11,7 +11,7 @@ import {
     Put,
     HttpCode,
 } from '@nestjs/common';
-import { IFeatureFlagsService } from '../../application/ports/feature-flags-service.interface.js';
+import type { IFeatureFlagsService } from '../../application/ports/feature-flags-service.interface.js';
 import { FEATURE_FLAGS_SERVICE_TOKEN } from '../../application/ports/feature-flags-service.token.js';
 import { CreateFlagDto } from '../dto/create-flag.dto.js';
 import { UpdateFlagDto } from '../dto/update-flag.dto.js';
@@ -62,5 +62,21 @@ export class FeatureFlagsController {
     @HttpCode(200)
     evaluate(@Param('key') key: string, @Body() context: EvaluationContextDto) {
         return this.featureFlagsService.evaluate(key, context);
+    }
+
+    @Get(':key/metrics')
+    getMetrics(
+        @Param('key') key: string,
+        @Query('window') window: '1h' | '24h' | '7d' | '30d' = '24h'
+    ) {
+        return this.featureFlagsService.getMetrics(key, window);
+    }
+
+    @Get(':key/analytics')
+    getAnalytics(
+        @Param('key') key: string,
+        @Query('window') window: '1h' | '24h' | '7d' | '30d' = '24h'
+    ) {
+        return this.featureFlagsService.getAnalytics(key, window);
     }
 }

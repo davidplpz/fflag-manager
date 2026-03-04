@@ -8,4 +8,6 @@ export interface IFeatureFlagsService {
     update(key: string, dto: any): Promise<FeatureFlag>;
     remove(key: string): Promise<void>;
     evaluate(key: string, context: EvaluationContextDto): Promise<{ enabled: boolean }>;
+    getMetrics(key: string, window: '1h' | '24h' | '7d' | '30d'): Promise<any>;
+    getAnalytics(key: string, window: '1h' | '24h' | '7d' | '30d'): Promise<any>;
 }

@@ -30,6 +30,54 @@ export class MetricsCollectorService {
         this.startFlushTimer();
     }
 
+    public getMetricsByFlag = async (key: string, timeWindow: '1h' | '24h' | '7d' | '30d'): Promise<any> => {
+        if (!this.pgClient._connected) {
+            await this.pgClient.connect();
+        }
+
+        const windowMs = this.getWindowMs(timeWindow);
+        const end = new Date();
+        const start = new Date(end.getTime() - windowMs);
+
+        const query = `
+            SELECT 
+                COUNT(*) as total,
+                COUNT(CASE WHEN result = true THEN 1 END) as enabled,
+                COUNT(CASE WHEN result = false THEN 1 END) as disabled,
+                COUNT(DISTINCT user_id) as users
+            FROM metric_events
+            WHERE flag_key = $1 AND timestamp >= $2 AND timestamp <= $3
+        `;
+
+        const res = await this.pgClient.query(query, [key, start, end]);
+        const row = res.rows[0];
+
+        const totalEvaluations = parseInt(row.total || '0', 10);
+        const enabledCount = parseInt(row.enabled || '0', 10);
+        const disabledCount = parseInt(row.disabled || '0', 10);
+        const uniqueUsers = parseInt(row.users || '0', 10);
+        const successRate = totalEvaluations > 0 ? enabledCount / totalEvaluations : 0;
+
+        return {
+            flagKey: key,
+            totalEvaluations,
+            enabledCount,
+            disabledCount,
+            uniqueUsers,
+            successRate
+        };
+    };
+
+    private getWindowMs(timeWindow: string): number {
+        switch (timeWindow) {
+            case '1h': return 3600000;
+            case '24h': return 86400000;
+            case '7d': return 604800000;
+            case '30d': return 2592000000;
+            default: return 3600000;
+        }
+    }
+
     async recordEvent(event: MetricEvent): Promise<void> {
         this.buffer.push(event);
         if (this.buffer.length >= this.MAX_BUFFER_SIZE) {
