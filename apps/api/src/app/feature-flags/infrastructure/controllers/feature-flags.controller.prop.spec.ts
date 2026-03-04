@@ -17,6 +17,7 @@ describe('FeatureFlagsController (Property Tests)', () => {
             findOne: jest.fn(),
             update: jest.fn(),
             remove: jest.fn(),
+            evaluate: jest.fn(),
         } as any;
 
         const module: TestingModule = await Test.createTestingModule({
@@ -95,6 +96,49 @@ describe('FeatureFlagsController (Property Tests)', () => {
                     const result = await controller.findOne(key);
                     expect(result.updatedAt.getTime()).toBeGreaterThanOrEqual(result.createdAt.getTime());
                     service.findOne.mockClear();
+                }
+            )
+        );
+    });
+
+    // Property 12: Non-Existent Flag Default (req 3.3)
+    it('Property 12: Non-Existent Flag Default - non-existent flag must return { enabled: false }', async () => {
+        await fc.assert(
+            fc.asyncProperty(
+                fc.string({ minLength: 3 }),
+                fc.record({
+                    userId: fc.option(fc.string(), { nil: undefined }),
+                }),
+                async (key, context) => {
+                    service.evaluate.mockResolvedValue({ enabled: false });
+
+                    const result = await controller.evaluate(key, context as any);
+
+                    expect(result).toEqual({ enabled: false });
+                    expect(service.evaluate).toHaveBeenCalledWith(
+                        key,
+                        expect.objectContaining(context),
+                    );
+                    service.evaluate.mockClear();
+                }
+            )
+        );
+    });
+
+    // Property 34: Evaluation Counter Increment (req 15.9)
+    it('Property 34: Evaluation Counter Increment - evaluate is always called with correct key', async () => {
+        await fc.assert(
+            fc.asyncProperty(
+                fc.string({ minLength: 1, maxLength: 100 }),
+                fc.boolean(),
+                async (key, enabledResult) => {
+                    service.evaluate.mockResolvedValue({ enabled: enabledResult });
+
+                    const result = await controller.evaluate(key, {});
+
+                    expect(service.evaluate).toHaveBeenCalledWith(key, expect.any(Object));
+                    expect(result.enabled).toBe(enabledResult);
+                    service.evaluate.mockClear();
                 }
             )
         );

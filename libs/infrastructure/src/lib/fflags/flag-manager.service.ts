@@ -1,5 +1,7 @@
 import { ManagerService } from 'fflags-lib';
 import { Redis } from 'ioredis';
+import pkg from 'pg';
+const { Client } = pkg;
 import {
   IFlagManager,
   CreateFlagDto,
@@ -18,10 +20,12 @@ import { FflagsConfig } from './config.interface.js';
  * - 1.5: Update Flag_State (activate/deactivate)
  * - 1.6: Delete Feature_Flag by Flag_Key
  * - 1.7: Retrieve Feature_Flag by Flag_Key
+ * - 4.7, 16.3: Fallback to PostgreSQL if Redis is unavailable
  */
 export class FlagManagerService implements IFlagManager {
   private managerService: ManagerService;
   private redisClient: Redis;
+  private pgClient: any;
 
   constructor(config: FflagsConfig) {
     // Initialize Redis client
@@ -35,6 +39,15 @@ export class FlagManagerService implements IFlagManager {
 
     // Initialize fflags-lib ManagerService
     this.managerService = ManagerService.getInstance(this.redisClient);
+
+    // Initialize PG client for fallback (Requirement 4.7, 16.3)
+    this.pgClient = new Client({
+      host: config.database.host,
+      port: config.database.port,
+      user: config.database.username,
+      password: config.database.password,
+      database: config.database.database,
+    });
   }
 
   /**
@@ -66,6 +79,7 @@ export class FlagManagerService implements IFlagManager {
   /**
    * Retrieve a feature flag by key
    * Returns null if flag does not exist (fail-safe behavior)
+   * Falls back to PostgreSQL if Redis/fflags-lib fails (Requirement 4.7, 16.3)
    */
   async getFlag(key: string): Promise<FeatureFlag | null> {
     try {
@@ -74,7 +88,7 @@ export class FlagManagerService implements IFlagManager {
       const flag = await this.managerService.getFlag(key);
 
       if (!flag) {
-        this.logInfo('getFlag', `Flag not found: ${key}`);
+        this.logInfo('getFlag', `Flag not found (fflags-lib): ${key}`);
         return null;
       }
 
@@ -83,14 +97,45 @@ export class FlagManagerService implements IFlagManager {
 
       return result;
     } catch (error) {
+      // Fallback to direct DB query if it's a connection error or something likely related to Redis/fflags-lib failure
+      if (!this.isNotFoundError(error)) {
+        this.logInfo('getFlag', `fflags-lib failed for ${key}, falling back to direct DB query. Error: ${error instanceof Error ? error.message : String(error)}`);
+        return this.getFlagFromDb(key);
+      }
+
       // If flag not found, return null instead of throwing (fail-safe)
-      if (this.isNotFoundError(error)) {
-        this.logInfo('getFlag', `Flag not found: ${key}`);
+      this.logInfo('getFlag', `Flag not found: ${key}`);
+      return null;
+    }
+  }
+
+  /**
+   * Direct database query for fallback
+   * (Requirement 4.7, 16.3)
+   */
+  private async getFlagFromDb(key: string): Promise<FeatureFlag | null> {
+    try {
+      if (!this.pgClient._connected) {
+        await this.pgClient.connect();
+      }
+
+      const query = 'SELECT id, is_active, name, description FROM feature_flags WHERE id = $1';
+      const res = await this.pgClient.query(query, [key]);
+
+      if (res.rows.length === 0) {
         return null;
       }
 
-      this.handleError('getFlag', error, { key });
-      throw this.wrapError(error, `Failed to retrieve flag with key '${key}'`);
+      const row = res.rows[0];
+      return {
+        key: row.id,
+        name: row.name || row.id,
+        description: row.description,
+        enabled: row.is_active,
+      };
+    } catch (error) {
+      this.handleError('getFlagFromDb', error, { key });
+      return null; // Ultimate fail-safe
     }
   }
 
@@ -200,6 +245,9 @@ export class FlagManagerService implements IFlagManager {
       this.logOperation('close', {});
       await this.managerService.quit();
       await this.redisClient.quit();
+      if (this.pgClient._connected) {
+        await this.pgClient.end();
+      }
       this.logSuccess('close', {});
     } catch (error) {
       this.handleError('close', error, {});

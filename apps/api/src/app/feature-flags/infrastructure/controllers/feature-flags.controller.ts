@@ -12,11 +12,11 @@ import {
     HttpCode,
 } from '@nestjs/common';
 import { IFeatureFlagsService } from '../../application/ports/feature-flags-service.interface.js';
-
 import { FEATURE_FLAGS_SERVICE_TOKEN } from '../../application/ports/feature-flags-service.token.js';
 import { CreateFlagDto } from '../dto/create-flag.dto.js';
 import { UpdateFlagDto } from '../dto/update-flag.dto.js';
 import { PaginationDto } from '../dto/pagination.dto.js';
+import { EvaluationContextDto } from '../dto/evaluation-context.dto.js';
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard.js';
 import { Roles } from '../../../auth/infrastructure/guards/roles.decorator.js';
@@ -28,7 +28,6 @@ export class FeatureFlagsController {
         @Inject(FEATURE_FLAGS_SERVICE_TOKEN)
         private readonly featureFlagsService: IFeatureFlagsService
     ) { }
-
 
     @Post()
     @Roles('admin')
@@ -57,5 +56,11 @@ export class FeatureFlagsController {
     @HttpCode(204)
     remove(@Param('key') key: string) {
         return this.featureFlagsService.remove(key);
+    }
+
+    @Post(':key/evaluate')
+    @HttpCode(200)
+    evaluate(@Param('key') key: string, @Body() context: EvaluationContextDto) {
+        return this.featureFlagsService.evaluate(key, context);
     }
 }

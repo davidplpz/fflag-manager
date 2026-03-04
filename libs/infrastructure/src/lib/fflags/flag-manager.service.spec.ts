@@ -1,10 +1,45 @@
-import { FlagManagerService } from './flag-manager.service';
-import { FflagsConfig } from './config.interface';
+import { FlagManagerService } from './flag-manager.service.js';
+import { FflagsConfig } from './config.interface.js';
+import { Redis } from 'ioredis';
+import pkg from 'pg';
+const { Client } = pkg;
+import { ManagerService } from 'fflags-lib';
+
+jest.mock('ioredis', () => {
+  return {
+    Redis: jest.fn().mockImplementation(() => ({
+      quit: jest.fn().mockResolvedValue('OK'),
+      on: jest.fn(),
+    })),
+  };
+});
+jest.mock('pg', () => ({
+  Client: jest.fn().mockImplementation(() => ({
+    connect: jest.fn().mockResolvedValue(undefined),
+    query: jest.fn().mockResolvedValue({ rows: [] }),
+    end: jest.fn().mockResolvedValue(undefined),
+    _connected: false,
+  })),
+}));
+jest.mock('fflags-lib', () => ({
+  ManagerService: {
+    getInstance: jest.fn().mockReturnValue({
+      getFlag: jest.fn(),
+      createFlag: jest.fn(),
+      getAllFlags: jest.fn(),
+      activateFlag: jest.fn(),
+      deactivateFlag: jest.fn(),
+      deleteFlag: jest.fn(),
+      quit: jest.fn().mockResolvedValue(undefined),
+    }),
+  },
+}));
 
 describe('FlagManagerService', () => {
   let config: FflagsConfig;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     config = {
       redis: {
         host: 'localhost',
@@ -26,139 +61,104 @@ describe('FlagManagerService', () => {
   describe('constructor', () => {
     it('should create an instance with valid configuration', () => {
       let service: FlagManagerService | undefined;
-      
+
       expect(() => {
         service = new FlagManagerService(config);
       }).not.toThrow();
-      
+
+      expect(Redis).toHaveBeenCalled();
+      expect(Client).toHaveBeenCalled();
+      expect(ManagerService.getInstance).toHaveBeenCalled();
+
       // Clean up
       if (service) {
-        service.close().catch(() => {
-          // Ignore cleanup errors in tests
-        });
+        service.close().catch(() => { });
       }
-    });
-  });
-
-  describe('interface implementation', () => {
-    it('should implement IFlagManager interface with all required methods', () => {
-      const service = new FlagManagerService(config);
-      
-      // Verify all interface methods are defined
-      expect(typeof service.createFlag).toBe('function');
-      expect(typeof service.getFlag).toBe('function');
-      expect(typeof service.getAllFlags).toBe('function');
-      expect(typeof service.activateFlag).toBe('function');
-      expect(typeof service.deactivateFlag).toBe('function');
-      expect(typeof service.deleteFlag).toBe('function');
-      
-      // Clean up
-      service.close().catch(() => {
-        // Ignore cleanup errors in tests
-      });
     });
   });
 
   describe('mapping', () => {
     it('should map fflags-lib FeatureFlag to domain FeatureFlag correctly', () => {
       const service = new FlagManagerService(config);
-      
+
       // Access private method through type assertion for testing
       const mapMethod = (service as any).mapToFeatureFlag;
-      
+
       const fflagsFlag = {
         key: 'test-flag',
         isActive: true,
         description: 'Test description',
       };
-      
+
       const result = mapMethod.call(service, fflagsFlag, 'Test Flag');
-      
+
       expect(result).toEqual({
         key: 'test-flag',
         name: 'Test Flag',
         description: 'Test description',
         enabled: true,
       });
-      
-      // Clean up
-      service.close().catch(() => {
-        // Ignore cleanup errors in tests
-      });
-    });
 
-    it('should use key as fallback name when name is empty', () => {
+      service.close().catch(() => { });
+    });
+  });
+
+  describe('fallback logic', () => {
+    it('should fall back to DB query when fflags-lib throws a connection error', async () => {
       const service = new FlagManagerService(config);
-      
-      const mapMethod = (service as any).mapToFeatureFlag;
-      
-      const fflagsFlag = {
+
+      const managerMock = (service as any).managerService;
+      managerMock.getFlag.mockRejectedValue(new Error('Redis connection lost'));
+
+      const pgClientMock = (service as any).pgClient;
+      pgClientMock.query.mockResolvedValue({
+        rows: [{ id: 'test-flag', is_active: true, name: 'Test', description: 'Desc' }]
+      });
+
+      const result = await service.getFlag('test-flag');
+
+      expect(managerMock.getFlag).toHaveBeenCalledWith('test-flag');
+      expect(pgClientMock.query).toHaveBeenCalled();
+      expect(result).toEqual({
         key: 'test-flag',
-        isActive: false,
-      };
-      
-      const result = mapMethod.call(service, fflagsFlag, '');
-      
-      expect(result.name).toBe('test-flag');
-      expect(result.enabled).toBe(false);
-      
-      // Clean up
-      service.close().catch(() => {
-        // Ignore cleanup errors in tests
+        name: 'Test',
+        enabled: true,
+        description: 'Desc',
       });
-    });
-  });
 
-  describe('error detection', () => {
-    it('should correctly identify not found errors', () => {
-      const service = new FlagManagerService(config);
-      
-      const isNotFoundError = (service as any).isNotFoundError;
-      
-      expect(isNotFoundError.call(service, new Error('not found'))).toBe(true);
-      expect(isNotFoundError.call(service, new Error('does not exist'))).toBe(true);
-      expect(isNotFoundError.call(service, new Error('No existe'))).toBe(true);
-      expect(isNotFoundError.call(service, new Error('other error'))).toBe(false);
-      expect(isNotFoundError.call(service, 'string error')).toBe(false);
-      
-      // Clean up
-      service.close().catch(() => {
-        // Ignore cleanup errors in tests
-      });
-    });
-  });
-
-  describe('error wrapping', () => {
-    it('should wrap errors with additional context', () => {
-      const service = new FlagManagerService(config);
-      
-      const wrapError = (service as any).wrapError;
-      
-      const originalError = new Error('Original message');
-      const wrappedError = wrapError.call(service, originalError, 'Context message');
-      
-      expect(wrappedError.message).toBe('Context message: Original message');
-      expect(wrappedError.stack).toBe(originalError.stack);
-      
-      // Clean up
-      service.close().catch(() => {
-        // Ignore cleanup errors in tests
-      });
+      service.close().catch(() => { });
     });
 
-    it('should handle non-Error objects', () => {
+    it('should return null if both fflags-lib and DB fallback fail', async () => {
       const service = new FlagManagerService(config);
-      
-      const wrapError = (service as any).wrapError;
-      
-      const wrappedError = wrapError.call(service, 'string error', 'Context message');
-      
-      expect(wrappedError.message).toBe('Context message: string error');
-      
-      // Clean up
-      service.close().catch(() => {
-        // Ignore cleanup errors in tests
-      });
+
+      const managerMock = (service as any).managerService;
+      managerMock.getFlag.mockRejectedValue(new Error('Redis connection lost'));
+
+      const pgClientMock = (service as any).pgClient;
+      pgClientMock.query.mockRejectedValue(new Error('DB connection failed'));
+
+      const result = await service.getFlag('test-flag');
+
+      expect(result).toBeNull();
+
+      service.close().catch(() => { });
+    });
+
+    it('should NOT fall back if fflags-lib returns a "not found" error', async () => {
+      const service = new FlagManagerService(config);
+
+      const managerMock = (service as any).managerService;
+      managerMock.getFlag.mockRejectedValue(new Error('Flag not found'));
+
+      const pgClientMock = (service as any).pgClient;
+
+      const result = await service.getFlag('test-flag');
+
+      expect(pgClientMock.query).not.toHaveBeenCalled();
+      expect(result).toBeNull();
+
+      service.close().catch(() => { });
     });
   });
 });

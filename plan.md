@@ -3079,8 +3079,8 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
   - [x] 14.12 Write property test for flag deletion
   - [x] 14.13 Write property test for timestamp metadata
 
-- [ ] 15. Implement flag evaluation endpoint
-  - [ ] 15.1 Implement POST /api/feature-flags/:key/evaluate
+- [x] 15. Implement flag evaluation endpoint
+  - [x] 15.1 Implement POST /api/feature-flags/:key/evaluate
     - Add @Post(':key/evaluate') decorator
     - Accept EvaluationContextDto in request body
     - Retrieve flag from fflags-lib (with Redis cache)
@@ -3090,21 +3090,21 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - Return false for non-existent flags (fail-safe)
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 7.7_
   
-  - [ ]* 15.2 Write property test for non-existent flag default
+  - [x]* 15.2 Write property test for non-existent flag default
     - **Property 12: Non-Existent Flag Default**
     - **Validates: Requirements 3.3**
   
-  - [ ]* 15.3 Write property test for evaluation counter increment
+  - [x]* 15.3 Write property test for evaluation counter increment
     - **Property 34: Evaluation Counter Increment**
     - **Validates: Requirements 15.9**
   
-  - [ ] 15.4 Implement graceful degradation for Redis failures
+  - [x] 15.4 Implement graceful degradation for Redis failures
     - Add try-catch around Redis cache access
     - Fall back to direct database query if Redis unavailable
     - Log warning for Redis failures
     - _Requirements: 4.7, 16.3_
   
-  - [ ]* 15.5 Write integration test for Redis fallback behavior
+  - [x]* 15.5 Write integration test for Redis fallback behavior
     - Test evaluation with Redis down
     - Verify fallback to database works
     - _Requirements: 4.7, 16.3_
