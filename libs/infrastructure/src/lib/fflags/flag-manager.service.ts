@@ -55,7 +55,7 @@ export class FlagManagerService implements IFlagManager {
 
       const result = this.mapToFeatureFlag(flag, dto.name);
       this.logSuccess('createFlag', { key: dto.key });
-      
+
       return result;
     } catch (error) {
       this.handleError('createFlag', error, { key: dto.key });
@@ -72,7 +72,7 @@ export class FlagManagerService implements IFlagManager {
       this.logOperation('getFlag', { key });
 
       const flag = await this.managerService.getFlag(key);
-      
+
       if (!flag) {
         this.logInfo('getFlag', `Flag not found: ${key}`);
         return null;
@@ -80,7 +80,7 @@ export class FlagManagerService implements IFlagManager {
 
       const result = this.mapToFeatureFlag(flag, key);
       this.logSuccess('getFlag', { key });
-      
+
       return result;
     } catch (error) {
       // If flag not found, return null instead of throwing (fail-safe)
@@ -88,7 +88,7 @@ export class FlagManagerService implements IFlagManager {
         this.logInfo('getFlag', `Flag not found: ${key}`);
         return null;
       }
-      
+
       this.handleError('getFlag', error, { key });
       throw this.wrapError(error, `Failed to retrieve flag with key '${key}'`);
     }
@@ -118,7 +118,7 @@ export class FlagManagerService implements IFlagManager {
       const paginatedFlags = allFlags.slice(startIndex, endIndex);
 
       // Map to FeatureFlag interface
-      const data = paginatedFlags.map((flag) => 
+      const data = paginatedFlags.map((flag) =>
         this.mapToFeatureFlag(flag, flag.key)
       );
 
@@ -132,6 +132,16 @@ export class FlagManagerService implements IFlagManager {
         totalPages,
       };
     } catch (error) {
+      if (error instanceof Error && error.message.includes('No feature flags found')) {
+        this.logInfo('getAllFlags', 'No feature flags found, returning empty list');
+        return {
+          data: [],
+          total: 0,
+          page: pagination.page || 1,
+          limit: pagination.limit || 10,
+          totalPages: 0,
+        };
+      }
       this.handleError('getAllFlags', error, { pagination });
       throw this.wrapError(error, 'Failed to retrieve all flags');
     }
@@ -275,7 +285,7 @@ export class FlagManagerService implements IFlagManager {
   private handleError(operation: string, error: unknown, context: Record<string, unknown>): void {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
-    
+
     console.error(`[FlagManagerService] Error in ${operation}:`, {
       error: errorMessage,
       stack: errorStack,

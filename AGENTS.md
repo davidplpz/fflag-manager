@@ -25,5 +25,8 @@
 ## Coding rules
 
 - **NO comments in code**: Do not add comments to the code files. The code should be self-documenting.
-- ** NestJS have to be organized in modules, controllers, services, etc** : for example if you need to create a new module, create a new folder in the **apps/api/src/app/** folder and create the module, controller, service, etc in that folder and inject the module in the app.module.ts file. Also use tokens to inject dependencies.
-- **Architectural Principles in Apps**: Inside `apps/`, adhere strictly to SOLID, TDD, Hexagonal Architecture, Screaming Architecture, and DDD. Folders must be well-separated (e.g., `domain`, `application`, `infrastructure` within each module folder if applicable, or clearly delineated layers).
+- **NestJS Organization**: NestJS applications must be organized into modules, controllers, services, etc. For example, when creating a new module, create a new folder in `apps/api/src/app/`, define the module, controller, and service within it, and import the module into `app.module.ts`. Use tokens for dependency injection.
+- **SOLID Compliance**: Do not break SOLID principles anywhere in the codebase.
+- **Architectural Principles**: Inside `apps/`, adhere strictly to Hexagonal Architecture, Screaming Architecture, and DDD. Folders must be well-separated (e.g., `domain`, `application`, `infrastructure`).
+- **Controller Testing**: All controllers must have corresponding E2E tests.
+

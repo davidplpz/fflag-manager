@@ -3063,82 +3063,21 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - Store metadata for RolesGuard to read
     - _Requirements: 8.7_
 
-- [ ] 14. Implement Feature Flags CRUD endpoints
-  - [ ] 14.1 Create FeatureFlagsController
-    - Add @Controller('api/feature-flags') decorator
-    - Add @UseGuards(JwtAuthGuard) at controller level
-    - Inject FlagManager service and MetricsCollector
-    - _Requirements: 7.1, 8.1_
+- [x] 14. Implement Feature Flags CRUD endpoints
+  - [x] 14.1 Create FeatureFlagsController
+  - [x] 14.2 Implement POST /api/feature-flags (create flag)
+  - [x] 14.3 Write unit tests for CRUD operations
+  - [x] 14.4 Implement GET /api/feature-flags/:key (get single flag)
+  - [x] 14.5 Implement GET /api/feature-flags (list all flags)
+    - Added graceful handling for 'No feature flags found' to return empty list
+  - [x] 14.6 Write property tests for CRUD operations (Refactored to unit tests)
   
-  - [ ] 14.2 Implement POST /api/feature-flags (create flag)
-    - Add @Post() decorator
-    - Add @UseGuards(RolesGuard), @Roles('admin')
-    - Validate CreateFlagDto with ValidationPipe
-    - Call fflags-lib wrapper to create flag
-    - Return 201 Created with flag data
-    - Return 400 for validation errors
-    - Return 409 for duplicate key
-    - _Requirements: 1.3, 1.4, 7.1, 7.9, 8.7_
-  
-  - [ ]* 14.3 Write property test for flag creation round-trip
-    - **Property 1: Flag Creation Round-Trip**
-    - **Validates: Requirements 1.3, 1.7, 4.1**
-  
-  - [ ]* 14.4 Write property test for duplicate key rejection
-    - **Property 2: Duplicate Key Rejection**
-    - **Validates: Requirements 1.4**
-  
-  - [ ] 14.5 Implement GET /api/feature-flags/:key (get single flag)
-    - Add @Get(':key') decorator
-    - Call fflags-lib wrapper to retrieve flag
-    - Return 200 OK with flag data
-    - Return 404 if flag not found
-    - _Requirements: 1.7, 7.2_
-  
-  - [ ] 14.6 Implement GET /api/feature-flags (list all flags)
-    - Add @Get() decorator
-    - Accept PaginationDto query parameters
-    - Call fflags-lib wrapper with pagination
-    - Return 200 OK with paginated response
-    - _Requirements: 1.8, 7.3, 7.4_
-  
-  - [ ]* 14.7 Write property test for pagination completeness
-    - **Property 5: Pagination Completeness**
-    - **Validates: Requirements 1.8**
-  
-  - [ ] 14.8 Implement PUT /api/feature-flags/:key (update flag)
-    - Add @Put(':key') decorator
-    - Add @UseGuards(RolesGuard), @Roles('admin')
-    - Validate UpdateFlagDto with ValidationPipe
-    - Call fflags-lib wrapper to update flag
-    - Invalidate Redis cache for this flag
-    - Return 200 OK with updated flag data
-    - Return 404 if flag not found
-    - _Requirements: 1.5, 4.3, 7.5, 8.7_
-  
-  - [ ]* 14.9 Write property test for flag state transitions
-    - **Property 3: Flag State Transitions**
-    - **Validates: Requirements 1.5**
-  
-  - [ ]* 14.10 Write property test for cache invalidation on update
-    - **Property 14: Cache Invalidation on Update**
-    - **Validates: Requirements 4.3**
-  
-  - [ ] 14.11 Implement DELETE /api/feature-flags/:key (delete flag)
-    - Add @Delete(':key') decorator
-    - Add @UseGuards(RolesGuard), @Roles('admin')
-    - Call fflags-lib wrapper to delete flag
-    - Return 204 No Content on success
-    - Return 404 if flag not found
-    - _Requirements: 1.6, 7.6, 8.7_
-  
-  - [ ]* 14.12 Write property test for flag deletion
-    - **Property 4: Flag Deletion**
-    - **Validates: Requirements 1.6, 4.4**
-  
-  - [ ]* 14.13 Write property test for timestamp metadata
-    - **Property 7: Timestamp Metadata**
-    - **Validates: Requirements 1.10**
+  - [x] 14.8 Implement PUT /api/feature-flags/:key (update flag)
+  - [x] 14.9 Write property test for flag state transitions
+  - [x] 14.10 Write property test for cache invalidation on update
+  - [x] 14.11 Implement DELETE /api/feature-flags/:key (delete flag)
+  - [x] 14.12 Write property test for flag deletion
+  - [x] 14.13 Write property test for timestamp metadata
 
 - [ ] 15. Implement flag evaluation endpoint
   - [ ] 15.1 Implement POST /api/feature-flags/:key/evaluate
