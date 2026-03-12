@@ -81,6 +81,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.2.6",
     "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.6.0",
     "class-transformer": "^0.5.1",

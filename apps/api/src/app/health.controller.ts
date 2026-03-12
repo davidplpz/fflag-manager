@@ -1,11 +1,19 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FflagsConfigFactory } from '../../../../libs/infrastructure/src/lib/fflags/config.factory.js';
 import { Redis } from 'ioredis';
 import { Client } from 'pg';
 
+@ApiTags('health')
 @Controller('health')
 export class HealthController {
     @Get()
+    @ApiOperation({
+        summary: 'Comprobar el estado del sistema',
+        description: 'Verifica la conectividad con las dependencias críticas (PostgreSQL y Redis). Devuelve 200 si todo está OK, o 503 si alguna falla.',
+    })
+    @ApiResponse({ status: 200, description: 'Sistema saludable.' })
+    @ApiResponse({ status: 503, description: 'Sistema no saludable (falla en base de datos o caché).' })
     async check() {
         const config = FflagsConfigFactory.fromEnvironment();
         const healthStatus: any = {

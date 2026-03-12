@@ -1,105 +1,289 @@
-# New Nx Repository
+# Feature Flags Manager
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Sistema completo de gestión de feature flags construido sobre **fflags-lib**, con métricas avanzadas, analytics, API REST (NestJS) y frontend web (Next.js). Sigue principios de **Arquitectura Hexagonal**, **DDD** y **TDD**.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Tabla de Contenidos
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-## Try the full Nx platform
-🚀 If you haven't connected to Nx Cloud yet, [complete your setup here](https://cloud.nx.app/setup/connect-workspace/guide). Get faster builds with remote caching, distributed task execution, and self-healing CI. [See how your workspace can benefit](#nx-cloud).
-## Generate a library
+- [Arquitectura](#arquitectura)
+- [Estructura del Monorepo](#estructura-del-monorepo)
+- [Stack Tecnológico](#stack-tecnológico)
+- [Setup Local](#setup-local)
+- [Variables de Entorno](#variables-de-entorno)
+- [API Endpoints](#api-endpoints)
+- [Estrategias de Activación](#estrategias-de-activación)
+- [Testing](#testing)
+- [Documentación Adicional](#documentación-adicional)
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
+---
+
+## Arquitectura
+
+El sistema sigue una **arquitectura hexagonal (Ports & Adapters)** con tres capas:
+
+```mermaid
+graph TB
+    subgraph Presentation
+        WEB[Next.js Frontend :3001]
+        API[NestJS API :3000]
+    end
+
+    subgraph Application
+        UC[Use Cases / Services]
+        MC[Metrics Collector]
+        AE[Analytics Engine]
+    end
+
+    subgraph Domain
+        FLIB[fflags-lib core<br/>ManagerService]
+        STRAT[Advanced Strategies]
+    end
+
+    subgraph Infrastructure
+        PG[(PostgreSQL :5432)]
+        REDIS[(Redis :6379)]
+        JWT[JWT Package]
+    end
+
+    WEB --> API
+    API --> UC
+    UC --> FLIB
+    UC --> MC
+    UC --> AE
+    FLIB --> PG
+    FLIB --> REDIS
+    MC --> PG
+    AE --> REDIS
+    API --> JWT
 ```
 
-## Run tasks
+### Componentes principales
 
-To build the library use:
+| Componente | Responsabilidad |
+|---|---|
+| **fflags-lib** | Motor core CRUD de feature flags (npm package) |
+| **Metrics Collector** | Recopila eventos de evaluación (batch async) |
+| **Analytics Engine** | Procesa y agrega métricas por time window |
+| **API REST** | Wrapper NestJS, autenticación JWT, DTOs validados |
+| **Web Frontend** | Gestión visual con Next.js + React |
+| **JWT Package** | Autenticación y autorización en `libs/infrastructure/@org/jwt` |
 
-```sh
-npx nx build pkg1
-```
+---
 
-To run any task with Nx use:
-
-```sh
-npx nx <target> <project-name>
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
+## Estructura del Monorepo
 
 ```
-npx nx release
+feature-flags-platform/
+├── apps/
+│   ├── api/                    # NestJS REST API (puerto 3000)
+│   │   └── src/app/
+│   │       ├── auth/           # Módulo de autenticación JWT
+│   │       ├── feature-flags/  # Módulo principal de feature flags
+│   │       │   ├── domain/     # Interfaces y tipos de dominio
+│   │       │   ├── application/ # Casos de uso y servicios
+│   │       │   └── infrastructure/ # Controladores, DTOs, repositorios
+│   │       └── health.controller.ts
+│   └── web/                    # Next.js Frontend (puerto 3001)
+├── libs/
+│   ├── domain/                 # Entidades y value objects compartidos
+│   ├── application/            # Casos de uso compartidos
+│   └── infrastructure/
+│       └── @org/jwt/           # Paquete JWT reutilizable
+├── scripts/
+│   └── database/
+│       └── init.sql            # Schema PostgreSQL inicial
+├── docker-compose.yml
+├── .env.example
+└── docs/
+    ├── examples/               # Ejemplos de código TypeScript
+    ├── strategies.md           # Documentación de Flag_Strategy types
+    └── database-schema.md      # Diagrama ER del esquema de BD
 ```
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+---
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Stack Tecnológico
 
-## Keep TypeScript project references up to date
+| Capa | Tecnología |
+|---|---|
+| **API** | NestJS 11, TypeScript, fflags-lib |
+| **Frontend** | Next.js 16, React 18, TypeScript |
+| **Auth** | @nestjs/jwt, RS256/HS256 |
+| **Persistencia** | PostgreSQL 15+ (via fflags-lib) |
+| **Caché** | Redis 7+ (via fflags-lib) |
+| **Validación** | class-validator, class-transformer |
+| **Testing** | Jest, Supertest, fast-check |
+| **Infraestructura** | Docker, Docker Compose, NX monorepo |
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
+---
 
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
+## Setup Local
 
-```sh
-npx nx sync
+### Prerrequisitos
+
+- Node.js 20+
+- Docker & Docker Compose
+- npm 10+
+
+### 1. Clonar e instalar dependencias
+
+```bash
+git clone <repo-url>
+cd feature-flags-platform
+npm install
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+### 2. Configurar variables de entorno
 
-```sh
-npx nx sync:check
+```bash
+cp .env.example .env
+# Editar .env con tus valores si es necesario
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+### 3. Levantar la infraestructura Docker
 
-## Nx Cloud
-
-Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Set up CI (non-Github Actions CI)
-
-**Note:** This is only required if your CI provider is not GitHub Actions.
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+```bash
+docker compose up -d
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Esto arranca PostgreSQL (`:5432`) y Redis (`:6379`) con health checks. El esquema de la BD se inicializa automáticamente desde `scripts/database/init.sql`.
 
-## Install Nx Console
+### 4. Arrancar la API
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+```bash
+npx nx serve api
+# La API estará disponible en http://localhost:3000/api
+# Swagger UI disponible en http://localhost:3000/api/docs
+```
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### 5. Arrancar el Frontend (opcional)
 
-## Useful links
+```bash
+npx nx serve web
+# Disponible en http://localhost:3001
+```
 
-Learn more:
+### 6. Arrancar todo a la vez
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```bash
+npm run serve:all
+```
 
-And join the Nx community:
+---
 
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Variables de Entorno
+
+Todas las variables disponibles en `.env.example`:
+
+| Variable | Por defecto | Descripción |
+|---|---|---|
+| `POSTGRES_HOST` | `localhost` | Host del servidor PostgreSQL |
+| `POSTGRES_PORT` | `5432` | Puerto de PostgreSQL |
+| `POSTGRES_USER` | `postgres` | Usuario de PostgreSQL |
+| `POSTGRES_PASSWORD` | `postgres` | Contraseña de PostgreSQL |
+| `POSTGRES_DB` | `fflags_db` | Nombre de la base de datos |
+| `REDIS_HOST` | `localhost` | Host del servidor Redis |
+| `REDIS_PORT` | `6379` | Puerto de Redis |
+| `REDIS_PASSWORD` | *(vacío)* | Contraseña de Redis (opcional) |
+| `REDIS_TTL` | `3600` | TTL de caché en segundos |
+| `JWT_SECRET` | — | Secret para firmar tokens JWT (obligatorio en producción) |
+| `PORT` | `3000` | Puerto de la API NestJS |
+
+> **Nota:** En el entorno de desarrollo con Docker, los valores por defecto del `.env.example` funcionan directamente.
+
+---
+
+## API Endpoints
+
+La documentación completa e interactiva está disponible en **Swagger UI**: `http://localhost:3000/api/docs`
+
+Todos los endpoints (excepto `/health`) requieren un **Bearer token JWT** en el header `Authorization`.
+
+| Método | Endpoint | Rol | Descripción |
+|---|---|---|---|
+| `GET` | `/api/health` | — | Estado del sistema |
+| `POST` | `/api/feature-flags` | admin | Crear un feature flag |
+| `GET` | `/api/feature-flags` | admin/viewer | Listar flags (paginado) |
+| `GET` | `/api/feature-flags/:key` | admin/viewer | Obtener un flag por key |
+| `PUT` | `/api/feature-flags/:key` | admin | Actualizar un flag |
+| `DELETE` | `/api/feature-flags/:key` | admin | Eliminar un flag |
+| `POST` | `/api/feature-flags/:key/evaluate` | admin/viewer | Evaluar un flag |
+| `GET` | `/api/feature-flags/:key/metrics` | admin/viewer | Métricas del flag |
+| `GET` | `/api/feature-flags/:key/analytics?window=24h` | admin/viewer | Analytics del flag |
+
+**Ventanas de tiempo** para métricas y analytics: `1h`, `24h`, `7d`, `30d`
+
+Ver ejemplos de código en [`docs/examples/basic-usage.ts`](docs/examples/basic-usage.ts).
+
+---
+
+## Estrategias de Activación
+
+El sistema soporta 4 tipos de **Flag_Strategy**:
+
+| Tipo | Campo clave | Descripción |
+|---|---|---|
+| `PERCENTAGE` | `rolloutPercentage` | Habilita para un % de usuarios (hashing consistente) |
+| `USER_LIST` | `userIds`, `isBlacklist` | Whitelist o blacklist de usuarios |
+| `TIME_WINDOW` | `startTime`, `endTime` | Activo solo en un rango de tiempo (ISO 8601) |
+| `COMPOSITE` | `operator`, `strategies` | Combina estrategias con `AND` / `OR` |
+
+Ver documentación detallada con ejemplos JSON en [`docs/strategies.md`](docs/strategies.md).
+
+---
+
+## Testing
+
+### Ejecutar todos los tests
+
+```bash
+npm test
+# o equivalente:
+npx nx run-many -t test
+```
+
+### Tests específicos por proyecto
+
+```bash
+# Tests de la API
+npm run test:api
+
+# Tests de las libs (domain, application, infrastructure)
+npm run test:libs
+
+# Tests en modo watch (para desarrollo)
+npm run test:watch
+```
+
+### Tipos de tests
+
+| Tipo | Ubicación | Framework |
+|---|---|---|
+| **Unit tests** | `*.spec.ts` junto al código | Jest |
+| **Integration tests** | `*.integration.spec.ts` | Jest + mocks |
+| **Property-based tests** | `*.prop.spec.ts` | Jest + fast-check |
+| **E2E tests** | `apps/api-e2e/`, `apps/web-e2e/` | Jest + Supertest |
+
+### Cobertura de código
+
+```bash
+npx nx test api --coverage
+```
+
+El objetivo es mantener **≥ 80%** de cobertura en todas las capas (Domain, Application, Infrastructure).
+
+### Estrategia de dobles de test
+
+- **Mocks**: para aislar casos de uso de repositorios externos
+- **Stubs**: para simular respuestas predecibles de servicios
+- **In-memory repositories**: implementaciones ligeras de repositorios para tests de integración sin BD real
+
+---
+
+## Documentación Adicional
+
+| Documento | Descripción |
+|---|---|
+| [`docs/examples/basic-usage.ts`](docs/examples/basic-usage.ts) | Ejemplos de código TypeScript para casos de uso comunes |
+| [`docs/strategies.md`](docs/strategies.md) | Ejemplos JSON de cada tipo de Flag_Strategy |
+| [`docs/database-schema.md`](docs/database-schema.md) | Diagrama ER del esquema de base de datos |
+| [Swagger UI](http://localhost:3000/api/docs) | Documentación interactiva de la API REST (requiere servidor) |
