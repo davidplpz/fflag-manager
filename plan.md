@@ -3160,27 +3160,27 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - Test error logging
     - _Requirements: 7.11_
 
-- [ ] 18. Add OpenAPI/Swagger documentation
-  - [ ] 18.1 Install and configure @nestjs/swagger
+- [x] 18. Add OpenAPI/Swagger documentation
+  - [x] 18.1 Install and configure @nestjs/swagger
     - Add SwaggerModule setup in main.ts
     - Configure API metadata (title, description, version)
     - Set up JWT bearer authentication scheme
     - _Requirements: 7.12_
   
-  - [ ] 18.2 Add Swagger decorators to DTOs and controllers
+  - [x] 18.2 Add Swagger decorators to DTOs and controllers
     - Add @ApiProperty to all DTO fields
     - Add @ApiOperation to all endpoints
     - Add @ApiResponse for all status codes
     - Add @ApiBearerAuth for protected endpoints
     - _Requirements: 7.12_
   
-  - [ ] 18.3 Generate and verify Swagger UI
+  - [x] 18.3 Generate and verify Swagger UI
     - Access Swagger UI at /api/docs
     - Verify all endpoints are documented
     - Test API calls through Swagger UI
     - _Requirements: 7.12_
 
-- [ ] 19. Checkpoint - Verify API backend
+- [x] 19. Checkpoint - Verify API backend
   - Ensure all CRUD endpoints work correctly
   - Verify JWT authentication and RBAC work
   - Verify evaluation endpoint with all strategy types
@@ -3191,35 +3191,34 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
 
 ### Phase 4: Web Frontend
 
-- [ ] 20. Set up Next.js application structure
-  - [ ] 20.1 Generate Next.js application in monorepo
+- [x] 20. Set up Next.js application structure
+  - [x] 20.1 Generate Next.js application in monorepo
     - Use NX generator to create Next.js app at `apps/web`
     - Configure App Router (Next.js 14+)
     - Set up TypeScript configuration
     - _Requirements: 9.1_
   
-  - [ ] 20.2 Install and configure dependencies
+  - [x] 20.2 Install and configure dependencies
     - Install TailwindCSS and configure
     - Install @tanstack/react-query for data fetching
     - Install axios or fetch wrapper for API calls
     - Install chart library for analytics (e.g., recharts)
     - _Requirements: 9.1, 11.1_
   
-  - [ ] 20.3 Create API client service
+  - [x] 20.3 Create API client service
     - Implement typed API client with all endpoints
     - Add JWT token management (localStorage or cookies)
     - Add request/response interceptors
-    - Add error handling
     - _Requirements: 8.5, 9.1_
   
-  - [ ] 20.4 Set up React Query configuration
+  - [x] 20.4 Set up React Query configuration
     - Configure QueryClient with defaults
     - Set up query cache and stale time
     - Add global error handling
     - _Requirements: 9.1_
 
-- [ ] 21. Implement authentication flow
-  - [ ] 21.1 Create login page at /login
+- [x] 21. Implement authentication flow
+  - [x] 21.1 Create login page at /login
     - Create login form with email and password fields
     - Implement form validation
     - Call authentication API endpoint
@@ -3227,20 +3226,20 @@ Este plan de implementación desglosa el Feature Flags Manager en tareas increme
     - Redirect to dashboard after login
     - _Requirements: 8.5, 9.2_
   
-  - [ ] 21.2 Create useAuth hook
+  - [x] 21.2 Create useAuth hook
     - Implement login, logout, and token management
     - Decode JWT to extract user information
     - Provide user context to components
     - Handle token expiration
     - _Requirements: 8.5, 8.6_
   
-  - [ ] 21.3 Create ProtectedRoute component
+  - [x] 21.3 Create ProtectedRoute component
     - Check for valid JWT token
     - Redirect to login if not authenticated
     - Show loading state during authentication check
     - _Requirements: 8.5_
   
-  - [ ]* 21.4 Write component tests for authentication flow
+  - [x]* 21.4 Write component tests for authentication flow
     - Test login form submission
     - Test token storage
     - Test protected route redirection

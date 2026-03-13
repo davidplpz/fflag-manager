@@ -4,6 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { AuthService } from './application/services/auth.service.js';
 import { JwtAuthGuard } from './infrastructure/guards/jwt-auth.guard.js';
 import { RolesGuard } from './infrastructure/guards/roles.guard.js';
+import { USER_REPOSITORY_TOKEN } from './domain/repositories/user.repository.js';
+import { PgUserRepository } from './infrastructure/repositories/pg-user.repository.js';
+import { AuthController } from './infrastructure/controllers/auth.controller.js';
 
 @Module({
     imports: [
@@ -15,7 +18,16 @@ import { RolesGuard } from './infrastructure/guards/roles.guard.js';
             }),
         }),
     ],
-    providers: [AuthService, JwtAuthGuard, RolesGuard],
+    controllers: [AuthController],
+    providers: [
+        AuthService,
+        JwtAuthGuard,
+        RolesGuard,
+        {
+            provide: USER_REPOSITORY_TOKEN,
+            useClass: PgUserRepository,
+        },
+    ],
     exports: [AuthService, JwtAuthGuard, RolesGuard],
 })
 export class AuthModule { }

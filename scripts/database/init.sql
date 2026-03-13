@@ -43,3 +43,15 @@ CREATE TABLE IF NOT EXISTS analytics_aggregates (
 );
 
 CREATE INDEX IF NOT EXISTS idx_analytics_aggregates_query ON analytics_aggregates(flag_key, time_window, window_start);
+
+-- Table for user management
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    roles JSONB DEFAULT '["viewer"]',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
