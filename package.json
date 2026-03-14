@@ -8,8 +8,8 @@
     "test:libs": "nx run-many -t test --projects=libs/*",
     "test:watch": "nx test api --watch",
     "serve:api": "nx serve api",
-    "serve:web": "nx serve web",
-    "serve:all": "nx run-many -t serve --projects=api,web"
+    "serve:web": "nx dev web",
+    "serve:all": "nx run-many -t serve,dev"
   },
   "private": true,
   "devDependencies": {
